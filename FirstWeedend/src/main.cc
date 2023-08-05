@@ -4,11 +4,25 @@
 #include "ray.h"
 #include "vec3.h"
 
-color ray_color(const ray& r) {
-  vec3 unit_direction = unit_vector(r.direction()); // 变成单位向量（长度为-1 -- 1）
-  auto t = 0.5 * (unit_direction.y() + 1.0); // 将向量长度范围调整为 （0 -- 1）
+bool hit_sphere(const point3& center, double radius, const ray& r) {
+  // 一个向量与自身的点积等于该向量的长度的平方
+  // 解方程t^2*b⋅b+2*t*b⋅(A−C)+(A−C)⋅(A−C)−r^2=0
+  vec3 oc = r.origin() - center; // 光射向圆心
+  auto a = dot(r.direction(), r.direction());
+  auto b = 2.0 * dot(oc, r.direction());
+  auto c = dot(oc, oc) - radius * radius;
+  auto discriminant = b * b - 4 * a * c; // delta = b^2 - 4*a*c
+  return (discriminant > 0); // 有解、与圆相交 可能一个或两个交点
+}
 
-  // 根据向量值和蓝色进行混合
+color ray_color(const ray& r) {
+  // 渲染球
+  if (hit_sphere(point3(0, 0, -1), 0.5, r))
+    return color(1, 0, 0);
+
+  // 渲染天空
+  vec3 unit_direction = unit_vector(r.direction());
+  auto t = 0.5 * (unit_direction.y() + 1.0);
   return (1.0 - t) * color(1.0, 1.0, 1.0) + t * color(0.5, 0.7, 1.0);
 }
 
