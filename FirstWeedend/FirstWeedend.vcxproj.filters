@@ -3,4 +3,8 @@
   <ItemGroup>
     <ClCompile Include="main.cc" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="vec3.h" />
+    <ClInclude Include="color.h" />
+  </ItemGroup>
 </Project>
