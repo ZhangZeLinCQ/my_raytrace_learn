@@ -4,7 +4,7 @@
 #include "ray.h"
 #include "vec3.h"
 
-bool hit_sphere(const point3& center, double radius, const ray& r) {
+double hit_sphere(const point3& center, double radius, const ray& r) {
   // 一个向量与自身的点积等于该向量的长度的平方
   // 解方程t^2*b⋅b+2*t*b⋅(A−C)+(A−C)⋅(A−C)−r^2=0
   vec3 oc = r.origin() - center; // 光射向圆心
@@ -12,17 +12,29 @@ bool hit_sphere(const point3& center, double radius, const ray& r) {
   auto b = 2.0 * dot(oc, r.direction());
   auto c = dot(oc, oc) - radius * radius;
   auto discriminant = b * b - 4 * a * c; // delta = b^2 - 4*a*c
-  return (discriminant > 0); // 有解、与圆相交 可能一个或两个交点
+  //return (discriminant > 0); 直接返回这个会有不一样的效果
+
+  if (discriminant < 0) {
+    return -1.0;
+  }
+  else {
+    // res = (-b +- sqrt(b^2 - 4*a*c)) / (2*a) 但是-+中-是最近的，不去渲染远处的，所以用最近的
+    return (-b - sqrt(discriminant)) / (2.0 * a); // 击中点
+  }
 }
 
 color ray_color(const ray& r) {
   // 渲染球
-  if (hit_sphere(point3(0, 0, -1), 0.5, r))
-    return color(1, 0, 0);
+  auto t = hit_sphere(point3(0, 0, -1), 0.5, r); // t 乘以ray方向为击中点
+  // 球的颜色不再是单纯的红色，而是根据击中的法向量来显示颜色
+  if (t > 0.0) {
+    vec3 N = unit_vector(r.at(t) - vec3(0, 0, -1));
+    return 0.5 * color(N.x() + 1, N.y() + 1, N.z() + 1);
+  }
 
   // 渲染天空
   vec3 unit_direction = unit_vector(r.direction());
-  auto t = 0.5 * (unit_direction.y() + 1.0);
+  t = 0.5 * (unit_direction.y() + 1.0);
   return (1.0 - t) * color(1.0, 1.0, 1.0) + t * color(0.5, 0.7, 1.0);
 }
 
