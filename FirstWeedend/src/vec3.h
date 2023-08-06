@@ -109,11 +109,15 @@ inline vec3 unit_vector(vec3 v) {
   return v / v.length();
 }
 
-vec3 random_in_unit_sphere() { // 在边长为1的圆中生成随机一点
+inline vec3 random_in_unit_sphere() { // 在边长为1的圆内生成随机一点
   while (true) {
     auto p = vec3::random(-1, 1);
     if (p.length_squared() >= 1) continue;
     return p;
   }
+}
+
+inline vec3 random_unit_vector() { // 生成一个随机单位向量
+  return unit_vector(random_in_unit_sphere());
 }
 #endif
