@@ -1,11 +1,15 @@
 ﻿#ifndef HITTABLE_H
 #define HITTABLE_H
 
+#include "common.h"
 #include "ray.h"
+
+class material;
 
 struct hit_record { // 击中记录
   point3 p; // 击中点
   vec3 normal; // 击中处法向量
+  shared_ptr<material> mat_ptr; // 记录材质
   double t; // 击中距离（时间）
   bool front_face; 
 
