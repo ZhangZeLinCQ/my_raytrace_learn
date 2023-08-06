@@ -1,18 +1,24 @@
-#ifndef HITTABLE_H
+ï»¿#ifndef HITTABLE_H
 #define HITTABLE_H
 
 #include "ray.h"
 
-struct hit_record { // »÷ÖĞ¼ÇÂ¼
-  point3 p; // »÷ÖĞµã
-  vec3 normal; // »÷ÖĞ´¦·¨ÏòÁ¿
-  double t; // »÷ÖĞ¾àÀë£¨Ê±¼ä£©
+struct hit_record { // å‡»ä¸­è®°å½•
+  point3 p; // å‡»ä¸­ç‚¹
+  vec3 normal; // å‡»ä¸­å¤„æ³•å‘é‡
+  double t; // å‡»ä¸­è·ç¦»ï¼ˆæ—¶é—´ï¼‰
+  bool front_face; 
+
+  inline void set_face_normal(const ray& r, const vec3& outward_normal) {
+    front_face = dot(r.direction(), outward_normal) < 0; // ç‚¹ä¹˜å°äº0 ä¸¤ä¸ªå‘é‡åå‘
+    normal = front_face ? outward_normal : -outward_normal; // å°äº0å…‰çº¿æ¥è‡ªå¤–éƒ¨ï¼Œå¤§äº0å…‰çº¿æ¥è‡ªå†…éƒ¨
+  }
 };
 
-// ³éÏóÀà£¬ËùÓĞ¿É±»¹âÏß»÷ÖĞµÄÎïÌåÒª¼Ì³ĞÕâ¸öÀà£¬È»ºóÊµÏÖhit·½·¨
+// æŠ½è±¡ç±»ï¼Œæ‰€æœ‰å¯è¢«å…‰çº¿å‡»ä¸­çš„ç‰©ä½“è¦ç»§æ‰¿è¿™ä¸ªç±»ï¼Œç„¶åå®ç°hitæ–¹æ³•
 class hittable {
 public:
-  //  the hit only ¡°counts¡± if t_min < t < t_max
+  //  the hit only â€œcountsâ€ if t_min < t < t_max
   virtual bool hit(const ray& r, double t_min, double t_max, hit_record& rec) const = 0;
 };
 
