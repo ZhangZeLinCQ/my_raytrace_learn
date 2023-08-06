@@ -127,12 +127,21 @@ inline vec3 random_unit_vector() { // 生成一个随机单位向量
   return unit_vector(random_in_unit_sphere());
 }
 
+// 随机的与normal侧的半圆中的点
 inline vec3 random_in_hemisphere(const vec3& normal) {
   vec3 in_unit_sphere = random_in_unit_sphere();
   if (dot(in_unit_sphere, normal) > 0.0) // In the same hemisphere as the normal
     return in_unit_sphere;
   else
     return -in_unit_sphere;
+}
+
+vec3 random_in_unit_disk() { // 半径为1的圆（三维）内一点
+  while (true) {
+    auto p = vec3(random_double(-1, 1), random_double(-1, 1), 0);
+    if (p.length_squared() >= 1) continue;
+    return p;
+  }
 }
 
 // 通过 入射光线 和 法向量 求 反射光线
