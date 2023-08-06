@@ -17,7 +17,9 @@ color ray_color(const ray& r, const hittable& world, int depth) {
     return color(0, 0, 0);
 
   if (world.hit(r, 0.001, infinity, rec)) { //solve shadow acne problem //太小的偏置可能无法消除阴影痤疮，而太大的偏置可能会导致其他的渲染错误，如阴影漂移
-    point3 target = rec.p + rec.normal + random_unit_vector(); // 从 以击中点为切点 的另一个单位圆 中找一个随机点 作为光线反射目的地
+    //point3 target = rec.p + rec.normal + random_in_unit_sphere(); // 从 以击中点为切点 的另一个单位圆 中找一个随机点 作为光线反射目的地
+    //point3 target = rec.p + rec.normal + random_unit_vector(); 
+    point3 target = rec.p + random_in_hemisphere(rec.normal);
     return 0.5 * ray_color(ray(rec.p, target - rec.p), world, depth - 1);
     //return 0.5 * (rec.normal + color(1, 1, 1)); // 根据击中的法向量来显示颜色
   }
