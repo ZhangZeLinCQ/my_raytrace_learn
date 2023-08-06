@@ -131,6 +131,7 @@
     <ClCompile Include="src\main.cc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\camera.h" />
     <ClInclude Include="src\color.h" />
     <ClInclude Include="src\common.h" />
     <ClInclude Include="src\hittable.h" />
