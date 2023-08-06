@@ -5,10 +5,13 @@
 
 class camera {
 public:
-  camera() {
-    auto aspect_ratio = 16.0 / 9.0;
+  // vfov: vertical field-of-view in degrees
+  camera(double vfov, double aspect_ratio) {
+    auto theta = degrees_to_radians(vfov); // 视角
+    auto h = tan(theta / 2); // 一半视角
+
     // 画布
-    auto viewport_height = 2.0; // 高2 （-1 - 1）
+    auto viewport_height = 2.0 * h;
     auto viewport_width = aspect_ratio * viewport_height; // 宽 计算得到
     auto focal_length = 1.0; // 距离原点
 
