@@ -7,11 +7,21 @@
 #include "sphere.h"
 #include "camera.h"
 
-color ray_color(const ray& r, const hittable& world) {
+// 设置递归深度（光线反射次数）
+color ray_color(const ray& r, const hittable& world, int depth) {
   // 渲染球
   hit_record rec;
-  if (world.hit(r, 0, infinity, rec)) {
-    return 0.5 * (rec.normal + color(1, 1, 1)); // 根据击中的法向量来显示颜色
+
+  // If we've exceeded the ray bounce limit, no more light is gathered.
+  if (depth <= 0)
+    return color(0, 0, 0);
+
+  if (world.hit(r, 0.001, infinity, rec)) { //solve shadow acne problem //太小的偏置可能无法消除阴影痤疮，而太大的偏置可能会导致其他的渲染错误，如阴影漂移
+    //point3 target = rec.p + rec.normal + random_in_unit_sphere(); // 从 以击中点为切点 的另一个单位圆 中找一个随机点 作为光线反射目的地
+    //point3 target = rec.p + rec.normal + random_unit_vector(); 
+    point3 target = rec.p + random_in_hemisphere(rec.normal);
+    return 0.5 * ray_color(ray(rec.p, target - rec.p), world, depth - 1);
+    //return 0.5 * (rec.normal + color(1, 1, 1)); // 根据击中的法向量来显示颜色
   }
 
   // 渲染天空
@@ -29,6 +39,7 @@ int main() {
   const long long image_width = 400;
   const long long image_height = static_cast<long long>(image_width / aspect_ratio);
   const int samples_per_pixel = 100; // 每个像素采样100个光线
+  const int max_depth = 50; // 光线弹动次数
 
   // World
   // 场景由一堆可击中物体构成
@@ -49,10 +60,10 @@ int main() {
       color pixel_color(0, 0, 0);
       for (int s = 0; s < samples_per_pixel; ++s) {
         // u、v 为屏幕像素上某一点坐标对应的[0-1][0-1]坐标
-        auto u = (i + random_double1()) / (image_width - 1);
-        auto v = (j + random_double1()) / (image_height - 1);
+        auto u = (i + random_double()) / (image_width - 1);
+        auto v = (j + random_double()) / (image_height - 1);
         ray r = cam.get_ray(u, v); // 从原点，射向画布的坐标uv
-        pixel_color += ray_color(r, world); // 获得这些光最终的颜色和
+        pixel_color += ray_color(r, world, max_depth); // 获得这些光最终的颜色和
       }
       write_color6(out, pixel_color, samples_per_pixel); // 将颜色写入图像文件
     }
