@@ -5,6 +5,7 @@
 #include "color.h"
 #include "hittable_list.h" // 包含了 hittable.h
 #include "sphere.h"
+#include "camera.h"
 
 color ray_color(const ray& r, const hittable& world) {
   // 渲染球
@@ -27,6 +28,7 @@ int main() {
   const auto aspect_ratio = 16.0 / 9.0;
   const long long image_width = 400;
   const long long image_height = static_cast<long long>(image_width / aspect_ratio);
+  const int samples_per_pixel = 100; // 每个像素采样100个光线
 
   // World
   // 场景由一堆可击中物体构成
@@ -35,16 +37,7 @@ int main() {
   world.add(make_shared<sphere>(point3(0, -100.5, -1), 100)); // 添加一个地板（一个大球）
 
   // Camera
-  // 画布
-  auto viewport_height = 2.0; // 高2 （-1 - 1）
-  auto viewport_width = aspect_ratio * viewport_height; // 宽 计算得到
-  auto focal_length = 1.0; // 距离原点
-
-  auto origin = point3(0, 0, 0); // 光线汇聚点（眼睛）
-  auto horizontal = vec3(viewport_width, 0, 0);
-  auto vertical = vec3(0, viewport_height, 0);
-  // 画布的左下角
-  auto lower_left_corner = origin - horizontal / 2 - vertical / 2 - vec3(0, 0, focal_length);
+  camera cam;
 
   // Render
 
@@ -53,16 +46,15 @@ int main() {
   for (int j = image_height - 1; j >= 0; --j) {// The rows are written out from top to bottom
     std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
     for (int i = 0; i < image_width; ++i) { // The pixels are written out in rows with pixels left to right
-
-      // u、v 为屏幕像素上某一点坐标对应的[0-1][0-1]坐标
-      auto u = double(i) / (image_width - 1); // 从左往右
-      auto v = double(j) / (image_height - 1); // 从下往上
-
-      // 从原点，射向画布的坐标uv
-      ray r(origin, lower_left_corner + u * horizontal + v * vertical - origin);
-      color pixel_color = ray_color(r, world); // 获得这束光最终的颜色
-
-      write_color6(out, pixel_color); // 将颜色写入图像文件
+      color pixel_color(0, 0, 0);
+      for (int s = 0; s < samples_per_pixel; ++s) {
+        // u、v 为屏幕像素上某一点坐标对应的[0-1][0-1]坐标
+        auto u = (i + random_double1()) / (image_width - 1);
+        auto v = (j + random_double1()) / (image_height - 1);
+        ray r = cam.get_ray(u, v); // 从原点，射向画布的坐标uv
+        pixel_color += ray_color(r, world); // 获得这些光最终的颜色和
+      }
+      write_color6(out, pixel_color, samples_per_pixel); // 将颜色写入图像文件
     }
   }
   out.close();
