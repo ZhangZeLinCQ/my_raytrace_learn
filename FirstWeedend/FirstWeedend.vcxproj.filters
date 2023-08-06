@@ -9,5 +9,6 @@
     <ClInclude Include="src\ray.h" />
     <ClInclude Include="src\hittable.h" />
     <ClInclude Include="src\sphere.h" />
+    <ClInclude Include="src\hittable_list.h" />
   </ItemGroup>
 </Project>
