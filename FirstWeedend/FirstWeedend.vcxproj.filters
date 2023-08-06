@@ -11,5 +11,10 @@
     <ClInclude Include="src\sphere.h" />
     <ClInclude Include="src\hittable_list.h" />
     <ClInclude Include="src\common.h" />
+    <ClInclude Include="src\camera.h" />
+    <ClInclude Include="src\material.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="image.ppm" />
   </ItemGroup>
 </Project>
