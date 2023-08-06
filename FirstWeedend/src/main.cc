@@ -1,45 +1,21 @@
 ﻿#include <fstream>
 
+#include "common.h" // 包含了 ray.h、vec3.h
+
 #include "color.h"
-#include "ray.h"
-#include "vec3.h"
+#include "hittable_list.h" // 包含了 hittable.h
+#include "sphere.h"
 
-double hit_sphere(const point3& center, double radius, const ray& r) {
-  // 一个向量与自身的点积等于该向量的长度的平方
-  // 解方程t^2*b⋅b+2*t*b⋅(A−C)+(A−C)⋅(A−C)−r^2=0
-  vec3 oc = r.origin() - center; // 光射向圆心
-  //auto a = dot(r.direction(), r.direction());
-  auto a = r.direction().length_squared();
-  //auto b = 2.0 * dot(oc, r.direction());
-  auto half_b = dot(oc, r.direction()); //令 b = 2 * half_b
-  //auto c = dot(oc, oc) - radius * radius;
-  auto c = oc.length_squared() - radius * radius;
-  //auto discriminant = b * b - 4 * a * c; // delta = b^2 - 4*a*c
-  auto discriminant = half_b * half_b - a * c;
-
-  if (discriminant < 0) {
-    return -1.0;
-  }
-  else {
-    // res = (-b +- sqrt(b^2 - 4*a*c)) / (2*a) 但是-+中-是最近的，不去渲染远处的，所以用最近的
-    //return (-b - sqrt(discriminant)) / (2.0 * a); // 击中点
-    // 令 b = 2 * half_b 公式可简化为==> res = (-half_b +- sqrt(half_b^2 - a*c))
-    return (-half_b - sqrt(discriminant)) / a;
-  }
-}
-
-color ray_color(const ray& r) {
+color ray_color(const ray& r, const hittable& world) {
   // 渲染球
-  auto t = hit_sphere(point3(0, 0, -1), 0.5, r); // t 乘以ray方向为击中点
-  // 球的颜色不再是单纯的红色，而是根据击中的法向量来显示颜色
-  if (t > 0.0) {
-    vec3 N = unit_vector(r.at(t) - vec3(0, 0, -1));
-    return 0.5 * color(N.x() + 1, N.y() + 1, N.z() + 1);
+  hit_record rec;
+  if (world.hit(r, 0, infinity, rec)) {
+    return 0.5 * (rec.normal + color(1, 1, 1)); // 根据击中的法向量来显示颜色
   }
 
   // 渲染天空
   vec3 unit_direction = unit_vector(r.direction());
-  t = 0.5 * (unit_direction.y() + 1.0);
+  auto t = 0.5 * (unit_direction.y() + 1.0);
   return (1.0 - t) * color(1.0, 1.0, 1.0) + t * color(0.5, 0.7, 1.0);
 }
 
@@ -51,6 +27,12 @@ int main() {
   const auto aspect_ratio = 16.0 / 9.0;
   const long long image_width = 400;
   const long long image_height = static_cast<long long>(image_width / aspect_ratio);
+
+  // World
+  // 场景由一堆可击中物体构成
+  hittable_list world;
+  world.add(make_shared<sphere>(point3(0, 0, -1), 0.5)); // 添加一个球
+  world.add(make_shared<sphere>(point3(0, -100.5, -1), 100)); // 添加一个地板（一个大球）
 
   // Camera
   // 画布
@@ -78,7 +60,7 @@ int main() {
 
       // 从原点，射向画布的坐标uv
       ray r(origin, lower_left_corner + u * horizontal + v * vertical - origin);
-      color pixel_color = ray_color(r); // 获得这束光最终的颜色
+      color pixel_color = ray_color(r, world); // 获得这束光最终的颜色
 
       write_color6(out, pixel_color); // 将颜色写入图像文件
     }
